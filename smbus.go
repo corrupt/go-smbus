@@ -1,4 +1,4 @@
-/*
+/* Package smbus
 Go bindings for the SMBus (System Management Bus) kernel interface
 SMBus is a subset of i2c suitable for a large number of devices
 Original domentation : https://www.kernel.org/doc/Documentation/i2c/smbus-protocol
@@ -26,11 +26,13 @@ const (
 	i2c_SLAVE = 0x0703
 )
 
+// Base type. Wraps a bus device and an address
 type SMBus struct {
 	bus  *os.File
 	addr byte
 }
 
+// Factory method for SMBus
 func New(bus uint, address byte) (*SMBus, error) {
 	smb := &SMBus{bus: nil}
 	err := smb.Bus_open(bus)
@@ -182,11 +184,13 @@ func (smb SMBus) Write_block_data(cmd byte, buf []byte) (int, error) {
 	return int(ret), err
 }
 
+// Block read method for devices without SMBus support. Uses plain i2c interface
 func (smb SMBus) Read_i2c_block_data(cmd byte, buf []byte) (int, error) {
 	ret, err := C.i2c_smbus_read_i2c_block_data(C.int(smb.bus.Fd()), C.__u8(cmd), C.__u8(len(buf)), ((*C.__u8)(&buf[0])))
 	return int(ret), err
 }
 
+// Block write method for devices without SMBus support. Uses plain i2c interface
 func (smb SMBus) Write_i2c_block_data(cmd byte, buf []byte) (int, error) {
 	ret, err := C.i2c_smbus_write_i2c_block_data(C.int(smb.bus.Fd()), C.__u8(cmd), C.__u8(len(buf)), ((*C.__u8)(&buf[0])))
 	return int(ret), err
