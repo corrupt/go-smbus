@@ -1,11 +1,10 @@
 # go-smbus
 Go bindings for the System Management Bus (SMBus) kernel interface
-
 This package provides simple bindings for the SMBus interfaces provided by the i2c-dev driver.
 
 **This code is largely untested. I'll happily accept a pull request for any bugs you might find**
 
-## usage
+## Usage
 
 Create an instance of `SMBus` using the factory method. It takes two parameters, the interface index and the bus address. The former is the enumerated device index. If your I2C device is `/dev/i2c-1`, your index is 1.
 The latter is the bus address to connect to from 0x00 to 0x77. It can later be changed using the `Set_addr` method.
