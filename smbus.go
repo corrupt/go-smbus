@@ -1,5 +1,4 @@
-/*
-Package smbus provides go bindings for the SMBus (System Management Bus) kernel interface
+/* Package smbus provides go bindings for the SMBus (System Management Bus) kernel interface
 SMBus is a subset of i2c suitable for a large number of devices
 Original domentation : https://www.kernel.org/doc/Documentation/i2c/smbus-protocol
 */
