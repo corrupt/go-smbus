@@ -4,6 +4,10 @@ This package provides simple bindings for the SMBus interfaces provided by the i
 
 **This code is largely untested. I'll happily accept a pull request for any bugs you might find**
 
+## Installation
+
+    go get github.com/corrupt/go-smbus
+
 ## Usage
 
 Create an instance of `SMBus` using the factory method. It takes two parameters, the interface index and the bus address. The former is the enumerated device index. If your I2C device is `/dev/i2c-1`, your index is 1.
