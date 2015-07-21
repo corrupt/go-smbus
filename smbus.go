@@ -53,7 +53,8 @@ func (smb *SMBus) Bus_open(bus uint) error {
 		return errors.New("Can only open one bus at at time")
 	}
 	path := fmt.Sprintf("/dev/i2c-%d", bus)
-	f, err := os.OpenFile(path, os.O_RDWR, 0600)
+	//f, err := os.OpenFile(path, os.O_RDWR, 0600)
+	f, err := os.OpenFile(path, os.O_RDWR, 0)
 	if err != nil {
 		return err
 	}
@@ -93,6 +94,7 @@ func ioctl(fd, cmd, arg uintptr) error {
 
 // Sends a single bit to the device, at the place of the Rd/Wr bit.
 func (smb SMBus) Write_quick(value byte) error {
+	smb.Set_addr(smb.addr)
 	_, err := C.i2c_smbus_write_quick(C.int(smb.bus.Fd()), C.__u8(value))
 	return err
 }
@@ -102,6 +104,7 @@ func (smb SMBus) Write_quick(value byte) error {
 // for others, it is a shorthand if you want to read the same register
 // as in the previous SMBus command.
 func (smb SMBus) Read_byte() (byte, error) {
+	smb.Set_addr(smb.addr)
 	ret, err := C.i2c_smbus_read_byte(C.int(smb.bus.Fd()))
 	if err != nil {
 		ret = 0
@@ -112,6 +115,7 @@ func (smb SMBus) Read_byte() (byte, error) {
 // This operation is the reverse of Receive Byte: it sends a single
 // byte to a device. See Receive Byte for more information.
 func (smb SMBus) Write_byte(value byte) error {
+	smb.Set_addr(smb.addr)
 	_, err := C.i2c_smbus_write_byte(C.int(smb.bus.Fd()), C.__u8(value))
 	return err
 }
@@ -119,6 +123,7 @@ func (smb SMBus) Write_byte(value byte) error {
 // Reads a single byte from a device, from a designated register.
 // The register is specified through the cmd byte
 func (smb SMBus) Read_byte_data(cmd byte) (byte, error) {
+	smb.Set_addr(smb.addr)
 	ret, err := C.i2c_smbus_read_byte_data(C.int(smb.bus.Fd()), C.__u8(cmd))
 	if err != nil {
 		ret = 0
@@ -130,6 +135,7 @@ func (smb SMBus) Read_byte_data(cmd byte) (byte, error) {
 // register is specified through the cmd byte. This is the opposite
 // of the Read Byte operation.
 func (smb SMBus) Write_byte_data(cmd, value byte) error {
+	smb.Set_addr(smb.addr)
 	_, err := C.i2c_smbus_write_byte_data(C.int(smb.bus.Fd()), C.__u8(cmd), C.__u8(value))
 	return err
 }
@@ -138,6 +144,7 @@ func (smb SMBus) Write_byte_data(cmd, value byte) error {
 // device, from a designated register that is specified through the cmd
 // byte. But this time, the data is a complete word (16 bits).
 func (smb *SMBus) Read_word_data(cmd byte) (uint16, error) {
+	smb.Set_addr(smb.addr)
 	ret, err := C.i2c_smbus_read_word_data(C.int(smb.bus.Fd()), C.__u8(cmd))
 	if err != nil {
 		ret = 0
@@ -149,6 +156,7 @@ func (smb *SMBus) Read_word_data(cmd byte) (uint16, error) {
 // of data is written to a device, to the designated register that is
 // specified through the cmd byte.
 func (smb SMBus) Write_word_data(cmd byte, value uint16) error {
+	smb.Set_addr(smb.addr)
 	_, err := C.i2c_smbus_write_word_data(C.int(smb.bus.Fd()), C.__u8(cmd), C.__u16(value))
 	return err
 }
@@ -156,6 +164,7 @@ func (smb SMBus) Write_word_data(cmd byte, value uint16) error {
 // This command selects a device register (through the cmd byte), sends
 // 16 bits of data to it, and reads 16 bits of data in return.
 func (smb SMBus) Process_call(cmd byte, value uint16) (uint16, error) {
+	smb.Set_addr(smb.addr)
 	ret, err := C.i2c_smbus_process_call(C.int(smb.bus.Fd()), C.__u8(cmd), C.__u16(value))
 	if err != nil {
 		ret = 0
@@ -168,6 +177,7 @@ func (smb SMBus) Process_call(cmd byte, value uint16) (uint16, error) {
 // of data in byte is specified by the length of the buf slice.
 // To read 4 bytes of data, pass a slice created like this: make([]byte, 4)
 func (smb SMBus) Read_block_data(cmd byte, buf []byte) (int, error) {
+	smb.Set_addr(smb.addr)
 	ret, err := C.i2c_smbus_read_block_data(
 		C.int(smb.bus.Fd()),
 		C.__u8(cmd),
@@ -180,18 +190,21 @@ func (smb SMBus) Read_block_data(cmd byte, buf []byte) (int, error) {
 // a device, to a designated register that is specified through the
 // cmd byte. The amount of data is specified by the lengts of buf.
 func (smb SMBus) Write_block_data(cmd byte, buf []byte) (int, error) {
+	smb.Set_addr(smb.addr)
 	ret, err := C.i2c_smbus_write_block_data(C.int(smb.bus.Fd()), C.__u8(cmd), C.__u8(len(buf)), ((*C.__u8)(&buf[0])))
 	return int(ret), err
 }
 
 // Block read method for devices without SMBus support. Uses plain i2c interface
 func (smb SMBus) Read_i2c_block_data(cmd byte, buf []byte) (int, error) {
+	smb.Set_addr(smb.addr)
 	ret, err := C.i2c_smbus_read_i2c_block_data(C.int(smb.bus.Fd()), C.__u8(cmd), C.__u8(len(buf)), ((*C.__u8)(&buf[0])))
 	return int(ret), err
 }
 
 // Block write method for devices without SMBus support. Uses plain i2c interface
 func (smb SMBus) Write_i2c_block_data(cmd byte, buf []byte) (int, error) {
+	smb.Set_addr(smb.addr)
 	ret, err := C.i2c_smbus_write_i2c_block_data(C.int(smb.bus.Fd()), C.__u8(cmd), C.__u8(len(buf)), ((*C.__u8)(&buf[0])))
 	return int(ret), err
 }
@@ -199,6 +212,7 @@ func (smb SMBus) Write_i2c_block_data(cmd byte, buf []byte) (int, error) {
 // This command selects a device register (through the cmd byte), sends
 // 1 to 31 bytes of data to it, and reads 1 to 31 bytes of data in return.
 func (smb SMBus) Block_process_call(cmd byte, buf []byte) ([]byte, error) {
+	smb.Set_addr(smb.addr)
 	ret, err := C.i2c_smbus_block_process_call(C.int(smb.bus.Fd()), C.__u8(cmd), C.__u8(len(buf)), ((*C.__u8)(&buf[0])))
 	if err != nil {
 		return nil, err
